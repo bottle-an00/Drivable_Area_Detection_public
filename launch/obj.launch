@@ -1,0 +1,15 @@
+<launch>
+
+<arg name="cloud_topic" default="/os_cloud_node/points"/>
+
+  <node name="ground_segmentation" pkg="patchworkpp" type="obj" output="screen">
+    <rosparam command="load" file="$(find patchworkpp)/config/params.yaml" />
+    <param name="cloud_topic" value="$(arg cloud_topic)"/>
+  </node>
+  
+  <node pkg="tf" type="static_transform_publisher" name="camera_init_to_map"  args="0 0 0 0 0 0 /map    /camera_init 10" />
+  <node pkg="tf" type="static_transform_publisher" name="base_link_to_camera" args="0 0 0 0 0 0 /camera /base_link   10" />
+  
+  <node name="$(anon rviz)" pkg="rviz" type="rviz" args="-d $(find patchworkpp)/rviz/obj.rviz"/>
+
+</launch>

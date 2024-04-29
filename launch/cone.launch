@@ -1,0 +1,12 @@
+<launch>
+
+<arg name="cloud_topic" default="/os_cloud_node/points"/>
+
+  <node name="ground_segmentation" pkg="patchworkpp" type="cone" output="screen">
+    <rosparam command="load" file="$(find patchworkpp)/config/params.yaml" />
+    <param name="cloud_topic" value="$(arg cloud_topic)"/>
+  </node>
+  
+  <node name="$(anon rviz)" pkg="rviz" type="rviz" args="-d $(find patchworkpp)/rviz/cone.rviz"/>
+
+</launch>
