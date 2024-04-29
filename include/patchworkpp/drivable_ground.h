@@ -147,82 +147,91 @@ public:
 
     }
 
-    void downSampling(vector<pcl::PointCloud<PointType>::Ptr> cloud_vec){
+    // void downSampling(vector<pcl::PointCloud<PointType>::Ptr> cloud_vec){
+
+    //     for(int j =1; j<max_value; j++){
+    //         pcl::PointCloud<PointType>::Ptr cloud = cloud_vec[j];
+    //         *RoadCloud+=*cloud; 
+    //         //각 채널의 상황에 따라 몇등분할지를 결정 -> voxel size를 결정
+
+    //         float x_box,y_box;
+    //         PointType maxPoint,minPoint;
+    //         pcl::getMinMax3D(*cloud, minPoint, maxPoint);
+
+    //         x_box = maxPoint.x - minPoint.x - 0.001;
+    //         y_box = (maxPoint.y - minPoint.y) - 0.001;
+
+    //         groundDownSampler.setLeafSize(x_box/2, y_box/10, 0.5f);
+    //         groundDownSampler.setInputCloud(cloud);
+    //         groundDownSampler.filter(*cloud);
+    //         *CurbCloud+=*cloud; 
+
+    //         size_t cloud_size = cloud->points.size();
+
+    //         // if(cloud_size > 1){
+    //         //     float radius_sum = 0.0;
+    //         //     float z_sum = 0.0;
+    //         //     PointType tmp_point;
+
+    //         //     for(int i =0; i<cloud_size; i++){
+                
+    //         //         float radius = sqrt(cloud->points[i].x*cloud->points[i].x + cloud->points[i].y*cloud->points[i].y);
+    //         //         float z_value = cloud->points[i].z;
+
+    //         //         radius_sum += radius;
+    //         //         z_sum += z_value;
+    //         //     }
+
+    //         //     tmp_point.x = radius_sum/cloud_size;
+    //         //     tmp_point.z = z_sum/cloud_size;
+    //         //     tmp_point.intensity = j;
+
+    //         //     cloud->push_back(tmp_point);
+
+    //             *groundCloudIn += *cloud;
+    //         //}
+
+    //     }
+    // }
+
+      void downSampling(vector<pcl::PointCloud<PointType>::Ptr> cloud_vec){
 
         for(int j =1; j<max_value; j++){
             pcl::PointCloud<PointType>::Ptr cloud = cloud_vec[j];
             *RoadCloud+=*cloud; 
             //각 채널의 상황에 따라 몇등분할지를 결정 -> voxel size를 결정
 
-            float x_box,y_box;
-            PointType maxPoint,minPoint;
-            pcl::getMinMax3D(*cloud, minPoint, maxPoint);
-
-            x_box = maxPoint.x - minPoint.x - 0.001;
-            y_box = (maxPoint.y - minPoint.y) - 0.001;
-
-            groundDownSampler.setLeafSize(x_box, y_box/10, 0.5f);
             groundDownSampler.setInputCloud(cloud);
             groundDownSampler.filter(*cloud);
             *CurbCloud+=*cloud; 
 
             size_t cloud_size = cloud->points.size();
 
-            // if(cloud_size > 1){
-            //     float radius_sum = 0.0;
-            //     float z_sum = 0.0;
-            //     PointType tmp_point;
+            if(cloud_size > 1){
+                float radius_sum = 0.0;
+                float z_sum = 0.0;
+                PointType tmp_point;
 
-            //     for(int i =0; i<cloud_size; i++){
+                for(int i =0; i<cloud_size; i++){
                 
-            //         float radius = sqrt(cloud->points[i].x*cloud->points[i].x + cloud->points[i].y*cloud->points[i].y);
-            //         float z_value = cloud->points[i].z;
+                    float radius = sqrt(cloud->points[i].x*cloud->points[i].x + cloud->points[i].y*cloud->points[i].y);
+                    float z_value = cloud->points[i].z;
 
-            //         radius_sum += radius;
-            //         z_sum += z_value;
-            //     }
+                    radius_sum += radius;
+                    z_sum += z_value;
+                }
 
-            //     tmp_point.x = radius_sum/cloud_size;
-            //     tmp_point.z = z_sum/cloud_size;
-            //     tmp_point.intensity = j;
+                tmp_point.x = radius_sum/cloud_size;
+                tmp_point.z = z_sum/cloud_size;
+                tmp_point.intensity = j;
 
-            //     cloud->push_back(tmp_point);
+                cloud->push_back(tmp_point);
 
                 *groundCloudIn += *cloud;
-            //}
+            }
 
         }
     }
-
-    // void downSampling(vector<pcl::PointCloud<PointType>::Ptr> cloud_vec){
-
-        // for(int j =1; j<max_value; j++){
-            // pcl::PointCloud<PointType>::Ptr cloud = cloud_vec[j];
-            // *RoadCloud+=*cloud; 
-            // //각 채널의 상황에 따라 몇등분할지를 결정 -> voxel size를 결정
-            // size_t cloud_size = cloud->points.size();
-            
-            // groundDownSampler.setInputCloud(cloud);
-            // groundDownSampler.filter(*cloud);
-            // *CurbCloud+=*cloud; 
-
-            // if(cloud_size > 1){
-                // for(int i =0; i<cloud_size-1; i++){
-                
-                    // PointType tmp_point;
-                    // tmp_point.x = (cloud->points[i].x + cloud->points[i+1].x)/2;
-                    // tmp_point.y = (cloud->points[i].y + cloud->points[i+1].y)/2;
-                    // tmp_point.z = (cloud->points[i].z + cloud->points[i+1].z)/2;
-
-                    // tmp_point.intensity = cloud->points[i].intensity;
-
-                    // cloud->push_back(tmp_point);
-                // }
-
-                // *groundCloudIn += *cloud;
-            // }
-        // }
-    // }
     
     void publishCloud(){
         sensor_msgs::PointCloud2 laserCloudTemp;

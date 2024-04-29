@@ -43,7 +43,7 @@ private:
     std_msgs::Header cloudHeader;
     pcl::KdTreeFLANN<PointType> Ground_kdtree;
     
-     tf::StampedTransform MappedTrans;
+    tf::StampedTransform MappedTrans;
     tf::TransformBroadcaster tfBroadcaster;
 
     tf::StampedTransform map_2_camera_init_Trans;
@@ -66,8 +66,8 @@ public:
 
         subNonGroundCloud.subscribe(nh, "/ground_segmentation/nonground", 2);
         subGroundCloud.subscribe(nh, "/ground_segmentation/ground", 2);
-        //subLocalMsg = nh.subscribe<geometry_msgs::Pose>("/local_msgs_for_vision", 100, &Object_Detection::localMsgHandler, this);
-        subLocalMsg = nh.subscribe<tf2_msgs::TFMessage>("/tf", 100, &Object_Detection::localMsgHandler, this);
+        subLocalMsg = nh.subscribe<geometry_msgs::Pose>("/local_msgs_for_vision", 100, &Object_Detection::localMsgHandler, this);
+        // subLocalMsg = nh.subscribe<tf2_msgs::TFMessage>("/tf", 100, &Object_Detection::localMsgHandler, this);
 
         sync.reset(new Sync(MySyncPolicy(20), subNonGroundCloud, subGroundCloud));
         sync->registerCallback(boost::bind(&Object_Detection::cloudHandler, this, _1, _2));
@@ -145,52 +145,15 @@ public:
         Ground_kdtree.setInputCloud(groundCloudIn);
     }
 
-    // void localMsgHandler(const geometry_msgs::Pose::ConstPtr& localMsg){
-    //     if(ego_info.is_initialize){ 
-    //         ego_info.prev = ego_info.curr;
-    //     }
-        
-    //     ego_info.curr.x = localMsg->position.x;
-    //     ego_info.curr.y = localMsg->position.y;
-    //     ego_info.curr.z = localMsg->position.z;
-        
-    //     if(ego_info.is_initialize){
-    //     dx = (-1) * abs(ego_info.curr.x - ego_info.prev.x);
-    //     dy = (-1) * abs(ego_info.curr.y - ego_info.prev.y);
-    //     dyaw = (-1) * abs(ego_info.curr.z - ego_info.prev.z);   
-
-    //     }
-
-    //     //cout << "x : " <<  ego_info.curr.x << " y : " << ego_info.curr.y << " heading : "  << ego_info.curr.z << " diff x : " << dx <<" diff y : " << dy << " diff yaw "<< dyaw<< endl << endl; 
-    // }
-
-    void localMsgHandler(const tf2_msgs::TFMessage::ConstPtr& localMsg){
-        if(ego_info.is_initialize){
+    void localMsgHandler(const geometry_msgs::Pose::ConstPtr& localMsg){
+        if(ego_info.is_initialize){ 
             ego_info.prev = ego_info.curr;
         }
         
-        for (auto& transform : localMsg->transforms) {
-            if (transform.child_frame_id == "/base_link2") { // Adjust "your_vehicle_frame_id" accordingly
-                ego_info.curr.x = transform.transform.translation.x;
-                ego_info.curr.y = transform.transform.translation.y;
-                
-                Eigen::Quaterniond q(transform.transform.rotation.w,
-                                  transform.transform.rotation.x,
-                                  transform.transform.rotation.y,
-                                  transform.transform.rotation.z);
-
-                Eigen::Vector3d euler = q.toRotationMatrix().eulerAngles(0, 1, 2);
-
-                double yaw = euler[2];
-
-                //ROS_INFO("Yaw angle (radians): %f", yaw);
-                //ROS_INFO("Yaw angle (degrees): %f", yaw * 180.0 / M_PI);
-
-                ego_info.curr.z = yaw; // testEKF.bag의 경우 차량의 heading값이  -6도 틀어짐
-            }
-
-        }
-
+        ego_info.curr.x = localMsg->position.x;
+        ego_info.curr.y = localMsg->position.y;
+        ego_info.curr.z = localMsg->position.z;
+        
         if(ego_info.is_initialize){
         dx = (-1) * abs(ego_info.curr.x - ego_info.prev.x);
         dy = (-1) * abs(ego_info.curr.y - ego_info.prev.y);
@@ -200,6 +163,43 @@ public:
 
         //cout << "x : " <<  ego_info.curr.x << " y : " << ego_info.curr.y << " heading : "  << ego_info.curr.z << " diff x : " << dx <<" diff y : " << dy << " diff yaw "<< dyaw<< endl << endl; 
     }
+
+    // void localMsgHandler(const tf2_msgs::TFMessage::ConstPtr& localMsg){
+    //     if(ego_info.is_initialize){
+    //         ego_info.prev = ego_info.curr;
+    //     }
+        
+    //     for (auto& transform : localMsg->transforms) {
+    //         if (transform.child_frame_id == "/base_link2") { // Adjust "your_vehicle_frame_id" accordingly
+    //             ego_info.curr.x = transform.transform.translation.x;
+    //             ego_info.curr.y = transform.transform.translation.y;
+                
+    //             Eigen::Quaterniond q(transform.transform.rotation.w,
+    //                               transform.transform.rotation.x,
+    //                               transform.transform.rotation.y,
+    //                               transform.transform.rotation.z);
+
+    //             Eigen::Vector3d euler = q.toRotationMatrix().eulerAngles(0, 1, 2);
+
+    //             double yaw = euler[2];
+
+    //             //ROS_INFO("Yaw angle (radians): %f", yaw);
+    //             //ROS_INFO("Yaw angle (degrees): %f", yaw * 180.0 / M_PI);
+
+    //             ego_info.curr.z = yaw; // testEKF.bag의 경우 차량의 heading값이  -6도 틀어짐
+    //         }
+
+    //     }
+
+    //     if(ego_info.is_initialize){
+    //     dx = (-1) * abs(ego_info.curr.x - ego_info.prev.x);
+    //     dy = (-1) * abs(ego_info.curr.y - ego_info.prev.y);
+    //     dyaw = (-1) * abs(ego_info.curr.z - ego_info.prev.z);   
+
+    //     }
+
+    //     //cout << "x : " <<  ego_info.curr.x << " y : " << ego_info.curr.y << " heading : "  << ego_info.curr.z << " diff x : " << dx <<" diff y : " << dy << " diff yaw "<< dyaw<< endl << endl; 
+    // }
 
     void copyPointCloud(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg){
 
