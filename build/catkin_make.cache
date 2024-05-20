@@ -1,0 +1,2 @@
+MORAI-ROS_morai_msgs:patchworkplusplus_ring
+-DCATKIN_DEVEL_PREFIX=/home/jba/github_projects_ws/devel -DCMAKE_INSTALL_PREFIX=/home/jba/github_projects_ws/install -G Unix Makefiles
